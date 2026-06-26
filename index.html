@@ -3,93 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>创界供应链 - 冷链温控在线核验系统</title>
-    <!-- 引入炫酷的 Tailwind CSS -->
+    <title>创界供应链 · 冷链温控在线核验</title>
+    <!-- 引入 Tailwind CSS 渲染界面 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @keyframes pulse-soft {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-        }
-        .pass-badge { animation: pulse-soft 3s infinite ease-in-out; }
-    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between font-sans">
+<body class="bg-slate-50 text-slate-700 font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- 顶部状态导航栏 -->
-    <header class="bg-slate-950 border-b border-slate-800 py-4 px-6 flex justify-between items-center">
+    <!-- 顶部极简品牌标识 -->
+    <header class="bg-white border-b border-slate-100 py-3 px-6 flex justify-between items-center shadow-sm">
         <div class="flex items-center space-x-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-            <span class="text-xs tracking-wider text-slate-400 font-bold uppercase">GSP 物联网实时存证核验</span>
+            <!-- 极简物联标识 -->
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span class="text-xs font-bold tracking-wider text-slate-800">CJ-CHAIN · 离线在线一体化存证</span>
         </div>
-        <span id="header-status" class="text-xs px-2 py-1 rounded font-bold bg-slate-800 text-slate-300">--</span>
+        <span id="header-status" class="text-[10px] px-2 py-0.5 rounded font-bold">--</span>
     </header>
 
-    <!-- 主体核验内容 -->
-    <main class="flex-grow p-6 flex flex-col items-center justify-center max-w-md mx-auto w-full space-y-6">
+    <!-- 简约大气的卡片核心区域 -->
+    <main class="flex-grow p-4 flex flex-col items-center justify-center max-w-md mx-auto w-full">
         
-        <!-- 动态合格证状态盖章 -->
-        <div id="status-card" class="w-full rounded-2xl border p-6 flex flex-col items-center text-center space-y-3 shadow-xl transition-all duration-500">
-            <div id="status-icon" class="w-16 h-16 rounded-full flex items-center justify-center text-3xl font-bold">--</div>
-            <div>
-                <h2 id="status-title" class="text-xl font-bold tracking-tight">--</h2>
-                <p id="status-desc" class="text-xs text-slate-400 mt-1">--</p>
-            </div>
-        </div>
-
-        <!-- 核心温控指标卡片 -->
-        <div class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-lg">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-teal-400 border-b border-slate-800 pb-2">温控核心数据看板</h3>
+        <!-- 容器大卡片 -->
+        <div class="w-full bg-white border border-slate-100 rounded-2xl p-6 shadow-sm space-y-6">
             
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800">
-                    <span class="text-[10px] text-slate-400 block">平均动能温度 (MKT)</span>
-                    <span id="val-mkt" class="text-lg font-bold text-slate-100">-- ℃</span>
+            <!-- 1. 动态核验结果盖章区 -->
+            <div id="status-card" class="w-full rounded-xl border p-4 flex items-center space-x-4 transition-all duration-300">
+                <!-- 动态矢量图标 -->
+                <div id="status-icon" class="w-12 h-12 rounded-full flex items-center justify-center shrink-0">
+                    <!-- 动态插入 SVG 图标 -->
                 </div>
-                <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800">
-                    <span class="text-[10px] text-slate-400 block">全程平均温度</span>
-                    <span id="val-avg" class="text-lg font-bold text-slate-100">-- ℃</span>
-                </div>
-                <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800">
-                    <span class="text-[10px] text-slate-400 block">全程最高温</span>
-                    <span id="val-max" class="text-lg font-bold text-emerald-400">-- ℃</span>
-                </div>
-                <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800">
-                    <span class="text-[10px] text-slate-400 block">全程最低温</span>
-                    <span id="val-min" class="text-lg font-bold text-blue-400">-- ℃</span>
+                <div>
+                    <h2 id="status-title" class="text-md font-bold tracking-tight text-slate-900">--</h2>
+                    <p id="status-desc" class="text-xs text-slate-500 mt-0.5">--</p>
                 </div>
             </div>
 
-            <!-- 合规率进度条 -->
-            <div class="space-y-1.5 pt-2">
-                <div class="flex justify-between text-xs">
-                    <span class="text-slate-400">温控合格比例 (Compliance)</span>
-                    <span id="val-rate-text" class="font-bold text-teal-400">--%</span>
+            <!-- 2. 数据可视化看板区 -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold tracking-wider text-slate-400 uppercase">数据监测指标</h3>
+                    <span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-mono">GSP VALIDATED</span>
                 </div>
-                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                    <div id="val-rate-bar" class="bg-gradient-to-r from-teal-500 to-emerald-400 h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+                
+                <!-- 2x2 指标栅格 -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100">
+                        <span class="text-[10px] text-slate-400 block font-medium">平均动能温度 (MKT)</span>
+                        <span id="val-mkt" class="text-lg font-bold text-slate-900 font-mono">-- ℃</span>
+                    </div>
+                    <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100">
+                        <span class="text-[10px] text-slate-400 block font-medium">全程平均温度</span>
+                        <span id="val-avg" class="text-lg font-bold text-slate-900 font-mono">-- ℃</span>
+                    </div>
+                    <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100 font-medium">
+                        <span class="text-[10px] text-slate-400 block">全程最高温</span>
+                        <span id="val-max" class="text-lg font-bold text-slate-900 font-mono">-- ℃</span>
+                    </div>
+                    <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100 font-medium">
+                        <span class="text-[10px] text-slate-400 block">全程最低温</span>
+                        <span id="val-min" class="text-lg font-bold text-slate-900 font-mono">-- ℃</span>
+                    </div>
+                </div>
+
+                <!-- 简约合规进度条 -->
+                <div class="space-y-1.5 pt-1">
+                    <div class="flex justify-between text-xs font-medium">
+                        <span class="text-slate-400">温控合规率 (Compliance)</span>
+                        <span id="val-rate-text" class="font-bold text-slate-800">--%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                        <div id="val-rate-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 基础元数据表 -->
-        <div class="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-4 text-xs space-y-2.5">
-            <div class="flex justify-between"><span class="text-slate-400">设备编号</span><span id="meta-id" class="font-semibold">--</span></div>
-            <div class="flex justify-between"><span class="text-slate-400">启运时间</span><span id="meta-start" class="font-semibold">--</span></div>
-            <div class="flex justify-between"><span class="text-slate-400">送达时间</span><span id="meta-end" class="font-semibold">--</span></div>
-            <div class="flex justify-between"><span class="text-slate-400">核验状态</span><span class="text-emerald-400 font-semibold flex items-center">✓ 密匙签名一致</span></div>
+            <!-- 3. 基本信息单据表（浅色条纹风） -->
+            <div class="border-t border-slate-100 pt-5 space-y-2.5 text-xs">
+                <div class="flex justify-between items-center py-0.5">
+                    <span class="text-slate-400 font-medium">设备主机编号</span>
+                    <span id="meta-id" class="font-semibold text-slate-800 font-mono">--</span>
+                </div>
+                <div class="flex justify-between items-center py-0.5">
+                    <span class="text-slate-400 font-medium">记录启运时间</span>
+                    <span id="meta-start" class="font-semibold text-slate-800 font-mono">--</span>
+                </div>
+                <div class="flex justify-between items-center py-0.5">
+                    <span class="text-slate-400 font-medium">记录送达时间</span>
+                    <span id="meta-end" class="font-semibold text-slate-800 font-mono">--</span>
+                </div>
+            </div>
+
         </div>
 
     </main>
 
-    <!-- 底部版权声称 -->
-    <footer class="bg-slate-950 py-4 text-center border-t border-slate-800 text-[10px] text-slate-500">
-        © 创界（贵州）供应链管理有限公司 | GSP 质量管理部
+    <!-- 底部极简版权页脚 -->
+    <footer class="bg-slate-100/50 py-3 text-center border-t border-slate-100 text-[10px] text-slate-400 tracking-wide">
+        创界（贵州）供应链管理有限公司 · GSP 质量部
     </footer>
 
-    <!-- 无状态解析逻辑 -->
+    <!-- 无状态前端解密渲染逻辑 -->
     <script>
-        // 1. 获取 URL 上的动态加密/明文参数
+        // 1. 读取 URL 上的动态存证指标
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id') || 'HCTLINK260417004';
         const startRaw = params.get('start') || '';
@@ -109,7 +123,7 @@
             return str;
         }
 
-        // 3. 渲染页面基础数据
+        // 3. 填充页面静态占位符
         document.getElementById('meta-id').innerText = id;
         document.getElementById('meta-start').innerText = formatDate(startRaw) || '未记录';
         document.getElementById('meta-end').innerText = formatDate(endRaw) || '未记录';
@@ -119,36 +133,54 @@
         document.getElementById('val-min').innerText = min + ' ℃';
         document.getElementById('val-rate-text').innerText = rate.toFixed(1) + '%';
         
-        // 动态进度条动画
+        // 动态加载进度条
         setTimeout(() => {
-            document.getElementById('val-rate-bar').style.width = rate + '%';
+            const bar = document.getElementById('val-rate-bar');
+            bar.style.width = rate + '%';
+            if (rate < 99.0) {
+                bar.classList.remove('bg-emerald-500');
+                bar.classList.add('bg-amber-500');
+            }
         }, 150);
 
-        // 4. 根据状态动态渲染样式 (合格 VS 异常警告)
+        // 4. 精英化 GSP 状态盖章渲染 (极简白底风格)
         const statusCard = document.getElementById('status-card');
         const statusIcon = document.getElementById('status-icon');
         const statusTitle = document.getElementById('status-title');
         const statusDesc = document.getElementById('status-desc');
         const headerStatus = document.getElementById('header-status');
 
+        // 优质的矢量 SVG 图标
+        const shieldCheckSvg = `
+            <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+        `;
+
+        const warningSvg = `
+            <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+        `;
+
         if (status === 'PASS' && rate >= 99.0) {
-            statusCard.classList.add('bg-emerald-950/20', 'border-emerald-500/30', 'pass-badge');
-            statusIcon.classList.add('bg-emerald-500/20', 'text-emerald-400');
-            statusIcon.innerText = '✓';
-            statusTitle.innerText = '冷链温控合格 (PASS)';
-            statusTitle.classList.add('text-emerald-400');
-            statusDesc.innerText = '该批次药械全程冷链监控未发生超限波动，符合规范';
-            headerStatus.innerText = '符合规范';
-            headerStatus.classList.add('bg-emerald-500/10', 'text-emerald-400');
+            statusCard.classList.add('bg-emerald-50/55', 'border-emerald-100');
+            statusIcon.classList.add('bg-emerald-100/70');
+            statusIcon.innerHTML = shieldCheckSvg;
+            statusTitle.innerText = '冷链温控核验：合格';
+            statusTitle.classList.add('text-emerald-700');
+            statusDesc.innerText = '该批次药械全程冷链控制符合 GSP 相关温度规范要求。';
+            headerStatus.innerText = '温控合格';
+            headerStatus.classList.add('bg-emerald-50', 'text-emerald-600');
         } else {
-            statusCard.classList.add('bg-rose-950/20', 'border-rose-500/30');
-            statusIcon.classList.add('bg-rose-500/20', 'text-rose-400');
-            statusIcon.innerText = '▲';
-            statusTitle.innerText = '温度超标预警 (WARNING)';
-            statusTitle.classList.add('text-rose-400');
-            statusDesc.innerText = '监测到温度超限波动或合规率不足，请质检部门核对';
-            headerStatus.innerText = '异常预警';
-            headerStatus.classList.add('bg-rose-500/10', 'text-rose-400');
+            statusCard.classList.add('bg-amber-50/55', 'border-amber-100');
+            statusIcon.classList.add('bg-amber-100/70');
+            statusIcon.innerHTML = warningSvg;
+            statusTitle.innerText = '温度超限预警';
+            statusTitle.classList.add('text-amber-700');
+            statusDesc.innerText = '监测到温度超标或合规率不足，请启动质量复核程序。';
+            headerStatus.innerText = '超限预警';
+            headerStatus.classList.add('bg-amber-50', 'text-amber-600');
         }
     </script>
 </body>
