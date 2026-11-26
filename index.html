@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>冷链温控核验单 · 创界供应链</title>
+  <title>冷链温控核验单</title>
   <style>
     :root {
       --bg-page: #eef0f2;
@@ -425,7 +425,7 @@
       <header class="sheet-head">
         <div>
           <div class="org-name">创界（贵州）供应链管理有限公司</div>
-          <h1 class="doc-title">药械冷链温控核验单</h1>
+          <h1 class="doc-title">试剂冷链温控核验单</h1>
         </div>
         <span id="header-status" class="doc-tag">待核验</span>
       </header>
@@ -529,12 +529,12 @@
 
       <!-- 底部归属与打印 -->
       <footer class="sheet-foot">
-        <span>GSP 质量管理部 · 电子溯源凭证</span>
+        <span>电子溯源凭证</span>
         <button type="button" class="print-btn" onclick="window.print()">打印 / 存为PDF</button>
       </footer>
     </main>
 
-    <div class="outer-note">本凭证由随车温控终端数据生成，仅供质检收货核对使用</div>
+    <div class="outer-note">本凭证由温控终端数据生成，仅供质检收货核对使用</div>
   </div>
 
   <script>
@@ -644,7 +644,7 @@
         document.body.classList.add('is-pass');
         headerStatus.textContent = '温控合格';
         statusTitle.textContent = '冷链温控核验合格';
-        statusDesc.textContent = '本批次药械运输全程温度符合 GSP 规范要求，准予正常收货入库。';
+        statusDesc.textContent = '本批次试剂运输全程温度符合 GSP 规范要求。';
         stampMain.textContent = '合格';
       } else {
         headerStatus.textContent = '超限预警';
