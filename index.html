@@ -1,187 +1,658 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>创界供应链 · 冷链温控在线核验</title>
-    <!-- 引入 Tailwind CSS 渲染界面 -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>冷链温控核验单 · 创界供应链</title>
+  <style>
+    :root {
+      --bg-page: #eef0f2;
+      --bg-sheet: #ffffff;
+      --bg-subtle: #f7f8fa;
+      --ink-primary: #141b24;
+      --ink-secondary: #4a5565;
+      --ink-muted: #7b8494;
+      --line-strong: #c8cfd8;
+      --line-soft: #e5e8ed;
+
+      /* 状态色默认按预警，JS 会按 PASS / WARN 切换 */
+      --accent: #b45309;
+      --accent-bg: #fffbeb;
+      --accent-border: #f3d19e;
+      --stamp-color: #b45309;
+    }
+
+    body.is-pass {
+      --accent: #0f6b4a;
+      --accent-bg: #f1f8f5;
+      --accent-border: #b7decb;
+      --stamp-color: #0f6b4a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-page);
+      color: var(--ink-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 14px 28px;
+    }
+
+    /* 主单据纸张容器 */
+    .sheet {
+      width: 100%;
+      max-width: 480px;
+      background: var(--bg-sheet);
+      border: 1px solid var(--line-strong);
+      border-top: 4px solid var(--ink-primary);
+      box-shadow: 0 2px 8px rgba(20, 27, 36, 0.06);
+    }
+
+    /* 页眉：企业与单据编号 */
+    .sheet-head {
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid var(--line-soft);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .org-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      letter-spacing: 0.02em;
+    }
+
+    .doc-title {
+      margin: 4px 0 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .doc-tag {
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border: 1px solid var(--accent-border);
+      background: var(--accent-bg);
+      color: var(--accent);
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+
+    /* 核验结论条 + 印章 */
+    .verdict-band {
+      position: relative;
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-bottom: 1px solid var(--accent-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    .verdict-text {
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .verdict-label {
+      font-size: 11px;
+      color: var(--ink-secondary);
+      margin-bottom: 3px;
+    }
+
+    .verdict-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .verdict-desc {
+      margin: 4px 0 0;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--ink-secondary);
+    }
+
+    /* 电子质检圆章 */
+    .stamp {
+      flex-shrink: 0;
+      width: 68px;
+      height: 68px;
+      border: 2px solid var(--stamp-color);
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--stamp-color);
+      transform: rotate(-12deg);
+      opacity: 0.88;
+      position: relative;
+    }
+
+    .stamp::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      border: 1px dashed var(--stamp-color);
+      border-radius: 50%;
+      opacity: 0.65;
+    }
+
+    .stamp-main {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      line-height: 1.1;
+    }
+
+    .stamp-sub {
+      font-size: 9px;
+      font-weight: 600;
+      margin-top: 2px;
+      letter-spacing: 0.04em;
+    }
+
+    /* 分区通用 */
+    .section {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .section:last-of-type {
+      border-bottom: none;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-secondary);
+      letter-spacing: 0.04em;
+    }
+
+    .section-note {
+      font-size: 11px;
+      color: var(--ink-muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    /* 2x2 指标表：细线分割表格风格，非气泡卡片 */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--line-soft);
+      background: var(--bg-subtle);
+    }
+
+    .metric-cell {
+      padding: 11px 12px;
+      background: #ffffff;
+    }
+
+    .metric-cell:nth-child(odd) {
+      border-right: 1px solid var(--line-soft);
+    }
+
+    .metric-cell:nth-child(1),
+    .metric-cell:nth-child(2) {
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .metric-name {
+      font-size: 11px;
+      color: var(--ink-muted);
+      margin-bottom: 4px;
+    }
+
+    .metric-val {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metric-unit {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-secondary);
+      margin-left: 2px;
+    }
+
+    /* 温区分布标尺（有数值时自动标注范围） */
+    .range-box {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--line-soft);
+    }
+
+    .range-head {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--ink-secondary);
+      margin-bottom: 8px;
+    }
+
+    .range-track {
+      position: relative;
+      height: 6px;
+      background: #e1e5eb;
+      border-radius: 1px;
+    }
+
+    .range-span {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      background: var(--accent);
+      opacity: 0.78;
+      border-radius: 1px;
+    }
+
+    .range-avg-dot {
+      position: absolute;
+      top: -3px;
+      width: 2px;
+      height: 12px;
+      background: var(--ink-primary);
+      transform: translateX(-50%);
+    }
+
+    .range-scale {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 10px;
+      color: var(--ink-muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 合规率条 */
+    .rate-row {
+      margin-top: 14px;
+    }
+
+    .rate-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .rate-label {
+      color: var(--ink-secondary);
+    }
+
+    .rate-num {
+      font-weight: 700;
+      color: var(--ink-primary);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .rate-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: #e6e9ee;
+      overflow: hidden;
+    }
+
+    .rate-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.6s ease;
+    }
+
+    /* 运单明细列表 */
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .meta-table tr {
+      border-bottom: 1px dashed var(--line-soft);
+    }
+
+    .meta-table tr:last-child {
+      border-bottom: none;
+    }
+
+    .meta-table th {
+      text-align: left;
+      font-weight: 500;
+      color: var(--ink-muted);
+      padding: 7px 0;
+      width: 36%;
+    }
+
+    .meta-table td {
+      text-align: right;
+      font-weight: 600;
+      color: var(--ink-primary);
+      padding: 7px 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-variant-numeric: tabular-nums;
+      word-break: break-all;
+    }
+
+    /* 页脚操作栏 */
+    .sheet-foot {
+      padding: 12px 20px;
+      background: var(--bg-subtle);
+      border-top: 1px solid var(--line-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+
+    .print-btn {
+      appearance: none;
+      border: 1px solid var(--line-strong);
+      background: #ffffff;
+      color: var(--ink-primary);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 2px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .print-btn:hover {
+      background: #f1f3f5;
+    }
+
+    .outer-note {
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--ink-muted);
+      text-align: center;
+    }
+
+    @media print {
+      body { background: #ffffff; }
+      .page-wrap { padding: 0; display: block; }
+      .sheet { max-width: 100%; box-shadow: none; }
+      .print-btn, .outer-note { display: none; }
+    }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-700 font-sans min-h-screen flex flex-col justify-between">
-
-    <!-- 顶部极简品牌标识 -->
-    <header class="bg-white border-b border-slate-100 py-3 px-6 flex justify-between items-center shadow-sm">
-        <div class="flex items-center space-x-2">
-            <!-- 极简物联标识 -->
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span class="text-xs font-bold tracking-wider text-slate-800">CJ-CHAIN · 离线在线一体化存证</span>
+<body>
+  <div class="page-wrap">
+    <main class="sheet">
+      <!-- 顶部单据抬头 -->
+      <header class="sheet-head">
+        <div>
+          <div class="org-name">创界（贵州）供应链管理有限公司</div>
+          <h1 class="doc-title">药械冷链温控核验单</h1>
         </div>
-        <span id="header-status" class="text-[10px] px-2 py-0.5 rounded font-bold">--</span>
-    </header>
+        <span id="header-status" class="doc-tag">待核验</span>
+      </header>
 
-    <!-- 简约大气的卡片核心区域 -->
-    <main class="flex-grow p-4 flex flex-col items-center justify-center max-w-md mx-auto w-full">
-        
-        <!-- 容器大卡片 -->
-        <div class="w-full bg-white border border-slate-100 rounded-2xl p-6 shadow-sm space-y-6">
-            
-            <!-- 1. 动态核验结果盖章区 -->
-            <div id="status-card" class="w-full rounded-xl border p-4 flex items-center space-x-4 transition-all duration-300">
-                <!-- 动态矢量图标 -->
-                <div id="status-icon" class="w-12 h-12 rounded-full flex items-center justify-center shrink-0">
-                    <!-- 动态插入 SVG 图标 -->
-                </div>
-                <div>
-                    <h2 id="status-title" class="text-md font-bold tracking-tight text-slate-900">--</h2>
-                    <p id="status-desc" class="text-xs text-slate-500 mt-0.5">--</p>
-                </div>
-            </div>
+      <!-- 核验结论栏 -->
+      <section class="verdict-band">
+        <div class="verdict-text">
+          <div class="verdict-label">GSP 质量复核结论</div>
+          <h2 id="status-title" class="verdict-title">--</h2>
+          <p id="status-desc" class="verdict-desc">--</p>
+        </div>
+        <div class="stamp" aria-hidden="true">
+          <span id="stamp-main" class="stamp-main">--</span>
+          <span class="stamp-sub">GSP 核验</span>
+        </div>
+      </section>
 
-            <!-- 2. 数据可视化看板区 -->
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-bold tracking-wider text-slate-400 uppercase">数据监测指标</h3>
-                    <span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-mono">GSP VALIDATED</span>
-                </div>
-                
-                <!-- 2x2 指标栅格 -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100">
-                        <span class="text-[10px] text-slate-400 block font-medium">平均动能温度 (MKT)</span>
-                        <span id="val-mkt" class="text-lg font-bold text-slate-900 font-mono">-- ℃</span>
-                    </div>
-                    <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100">
-                        <span class="text-[10px] text-slate-400 block font-medium">全程平均温度</span>
-                        <span id="val-avg" class="text-lg font-bold text-slate-900 font-mono">-- ℃</span>
-                    </div>
-                    <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100 font-medium">
-                        <span class="text-[10px] text-slate-400 block">全程最高温</span>
-                        <span id="val-max" class="text-lg font-bold text-slate-900 font-mono">-- ℃</span>
-                    </div>
-                    <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100 font-medium">
-                        <span class="text-[10px] text-slate-400 block">全程最低温</span>
-                        <span id="val-min" class="text-lg font-bold text-slate-900 font-mono">-- ℃</span>
-                    </div>
-                </div>
-
-                <!-- 简约合规进度条 -->
-                <div class="space-y-1.5 pt-1">
-                    <div class="flex justify-between text-xs font-medium">
-                        <span class="text-slate-400">温控合规率 (Compliance)</span>
-                        <span id="val-rate-text" class="font-bold text-slate-800">--%</span>
-                    </div>
-                    <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                        <div id="val-rate-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 3. 基本信息单据表（浅色条纹风） -->
-            <div class="border-t border-slate-100 pt-5 space-y-2.5 text-xs">
-                <div class="flex justify-between items-center py-0.5">
-                    <span class="text-slate-400 font-medium">设备主机编号</span>
-                    <span id="meta-id" class="font-semibold text-slate-800 font-mono">--</span>
-                </div>
-                <div class="flex justify-between items-center py-0.5">
-                    <span class="text-slate-400 font-medium">记录启运时间</span>
-                    <span id="meta-start" class="font-semibold text-slate-800 font-mono">--</span>
-                </div>
-                <div class="flex justify-between items-center py-0.5">
-                    <span class="text-slate-400 font-medium">记录送达时间</span>
-                    <span id="meta-end" class="font-semibold text-slate-800 font-mono">--</span>
-                </div>
-            </div>
-
+      <!-- 温控实测指标 -->
+      <section class="section">
+        <div class="section-head">
+          <h3 class="section-title">全程温度实测</h3>
+          <span class="section-note">UNIT: ℃</span>
         </div>
 
+        <div class="metrics-grid">
+          <div class="metric-cell">
+            <div class="metric-name">平均动能温度 (MKT)</div>
+            <div class="metric-val"><span id="val-mkt">--</span><span class="metric-unit">℃</span></div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-name">全程平均温度</div>
+            <div class="metric-val"><span id="val-avg">--</span><span class="metric-unit">℃</span></div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-name">全程最高温度</div>
+            <div class="metric-val"><span id="val-max">--</span><span class="metric-unit">℃</span></div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-name">全程最低温度</div>
+            <div class="metric-val"><span id="val-min">--</span><span class="metric-unit">℃</span></div>
+          </div>
+        </div>
+
+        <!-- 极值区间标尺 -->
+        <div id="range-box" class="range-box" style="display: none;">
+          <div class="range-head">
+            <span>实测温幅区间</span>
+            <span id="range-span-text">--</span>
+          </div>
+          <div class="range-track">
+            <div id="range-span" class="range-span"></div>
+            <div id="range-avg-dot" class="range-avg-dot" title="全程平均温度"></div>
+          </div>
+          <div class="range-scale">
+            <span id="scale-min">0℃</span>
+            <span>标准冷链参考区间 (2~8℃)</span>
+            <span id="scale-max">12℃</span>
+          </div>
+        </div>
+
+        <!-- 合规率 -->
+        <div class="rate-row">
+          <div class="rate-top">
+            <span class="rate-label">温控合规率（标准 ≥ 99.0%）</span>
+            <span id="val-rate-text" class="rate-num">--%</span>
+          </div>
+          <div class="rate-bar-bg">
+            <div id="val-rate-bar" class="rate-bar-fill"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 设备与运输时间记录 -->
+      <section class="section">
+        <div class="section-head">
+          <h3 class="section-title">设备与储运节点</h3>
+          <span class="section-note" id="verify-time">--</span>
+        </div>
+
+        <table class="meta-table">
+          <tbody>
+            <tr>
+              <th>设备主机编号</th>
+              <td id="meta-id">--</td>
+            </tr>
+            <tr>
+              <th>记录启运时间</th>
+              <td id="meta-start">--</td>
+            </tr>
+            <tr>
+              <th>记录送达时间</th>
+              <td id="meta-end">--</td>
+            </tr>
+            <tr>
+              <th>累计监控时长</th>
+              <td id="meta-duration">--</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 底部归属与打印 -->
+      <footer class="sheet-foot">
+        <span>GSP 质量管理部 · 电子溯源凭证</span>
+        <button type="button" class="print-btn" onclick="window.print()">打印 / 存为PDF</button>
+      </footer>
     </main>
 
-    <!-- 底部极简版权页脚 -->
-    <footer class="bg-slate-100/50 py-3 text-center border-t border-slate-100 text-[10px] text-slate-400 tracking-wide">
-        创界（贵州）供应链管理有限公司 · GSP 质量部
-    </footer>
+    <div class="outer-note">本凭证由随车温控终端数据生成，仅供质检收货核对使用</div>
+  </div>
 
-    <!-- 无状态前端解密渲染逻辑 -->
-    <script>
-        // 1. 读取 URL 上的动态存证指标
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id') || 'HCTLINK260417004';
-        const startRaw = params.get('start') || '';
-        const endRaw = params.get('end') || '';
-        const mkt = params.get('mkt') || '--';
-        const avg = params.get('avg') || '--';
-        const max = params.get('max') || '--';
-        const min = params.get('min') || '--';
-        const rate = parseFloat(params.get('rate') || '0');
-        const status = params.get('status') || 'WARN';
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id') || 'HCTLINK260417004';
+      const startRaw = params.get('start') || '';
+      const endRaw = params.get('end') || '';
+      const mktRaw = params.get('mkt');
+      const avgRaw = params.get('avg');
+      const maxRaw = params.get('max');
+      const minRaw = params.get('min');
+      const rateRaw = params.get('rate');
+      const rate = rateRaw !== null && !Number.isNaN(parseFloat(rateRaw)) ? parseFloat(rateRaw) : 0;
+      const status = (params.get('status') || 'WARN').toUpperCase();
 
-        // 2. 格式化日期格式 (例如 202606181600 -> 2026-06-18 16:00)
-        function formatDate(str) {
-            if (str.length === 12) {
-                return str.replace(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/, "$1-$2-$3 $4:$5");
-            }
-            return str;
+      function formatDate(str) {
+        if (/^\d{12}$/.test(str)) {
+          return str.replace(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1-$2-$3 $4:$5');
         }
+        return str || '未记录';
+      }
 
-        // 3. 填充页面静态占位符
-        document.getElementById('meta-id').innerText = id;
-        document.getElementById('meta-start').innerText = formatDate(startRaw) || '未记录';
-        document.getElementById('meta-end').innerText = formatDate(endRaw) || '未记录';
-        document.getElementById('val-mkt').innerText = mkt + ' ℃';
-        document.getElementById('val-avg').innerText = avg + ' ℃';
-        document.getElementById('val-max').innerText = max + ' ℃';
-        document.getElementById('val-min').innerText = min + ' ℃';
-        document.getElementById('val-rate-text').innerText = rate.toFixed(1) + '%';
-        
-        // 动态加载进度条
-        setTimeout(() => {
-            const bar = document.getElementById('val-rate-bar');
-            bar.style.width = rate + '%';
-            if (rate < 99.0) {
-                bar.classList.remove('bg-emerald-500');
-                bar.classList.add('bg-amber-500');
-            }
-        }, 150);
+      function parseCompactDate(str) {
+        if (!/^\d{12}$/.test(str)) return null;
+        const y = Number(str.slice(0, 4));
+        const m = Number(str.slice(4, 6)) - 1;
+        const d = Number(str.slice(6, 8));
+        const h = Number(str.slice(8, 10));
+        const min = Number(str.slice(10, 12));
+        return new Date(y, m, d, h, min);
+      }
 
-        // 4. 精英化 GSP 状态盖章渲染 (极简白底风格)
-        const statusCard = document.getElementById('status-card');
-        const statusIcon = document.getElementById('status-icon');
-        const statusTitle = document.getElementById('status-title');
-        const statusDesc = document.getElementById('status-desc');
-        const headerStatus = document.getElementById('header-status');
+      function calcDuration(sStr, eStr) {
+        const s = parseCompactDate(sStr);
+        const e = parseCompactDate(eStr);
+        if (!s || !e || e < s) return '未计算';
+        const mins = Math.round((e - s) / 60000);
+        const days = Math.floor(mins / 1440);
+        const hours = Math.floor((mins % 1440) / 60);
+        const remMins = mins % 60;
+        if (days > 0) return `${days}天 ${hours}小时 ${remMins}分`;
+        if (hours > 0) return `${hours}小时 ${remMins}分`;
+        return `${remMins}分钟`;
+      }
 
-        // 优质的矢量 SVG 图标
-        const shieldCheckSvg = `
-            <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-            </svg>
-        `;
+      // 填充基础信息
+      document.getElementById('meta-id').textContent = id;
+      document.getElementById('meta-start').textContent = formatDate(startRaw);
+      document.getElementById('meta-end').textContent = formatDate(endRaw);
+      document.getElementById('meta-duration').textContent = calcDuration(startRaw, endRaw);
 
-        const warningSvg = `
-            <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-            </svg>
-        `;
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      document.getElementById('verify-time').textContent =
+        `查验 ${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
-        if (status === 'PASS' && rate >= 99.0) {
-            statusCard.classList.add('bg-emerald-50/55', 'border-emerald-100');
-            statusIcon.classList.add('bg-emerald-100/70');
-            statusIcon.innerHTML = shieldCheckSvg;
-            statusTitle.innerText = '冷链温控核验：合格';
-            statusTitle.classList.add('text-emerald-700');
-            statusDesc.innerText = '该批次药械全程冷链控制符合 GSP 相关温度规范要求。';
-            headerStatus.innerText = '温控合格';
-            headerStatus.classList.add('bg-emerald-50', 'text-emerald-600');
+      // 填充温度数值
+      document.getElementById('val-mkt').textContent = mktRaw || '--';
+      document.getElementById('val-avg').textContent = avgRaw || '--';
+      document.getElementById('val-max').textContent = maxRaw || '--';
+      document.getElementById('val-min').textContent = minRaw || '--';
+
+      const clampedRate = Math.max(0, Math.min(100, rate));
+      document.getElementById('val-rate-text').textContent = rate.toFixed(1) + '%';
+      requestAnimationFrame(() => {
+        document.getElementById('val-rate-bar').style.width = clampedRate + '%';
+      });
+
+      // 若存在有效最高/最低温，展示温幅区间条
+      const minNum = parseFloat(minRaw);
+      const maxNum = parseFloat(maxRaw);
+      const avgNum = parseFloat(avgRaw);
+      if (!Number.isNaN(minNum) && !Number.isNaN(maxNum) && maxNum >= minNum) {
+        const scaleMin = Math.min(0, Math.floor(minNum - 1));
+        const scaleMax = Math.max(12, Math.ceil(maxNum + 1));
+        const span = scaleMax - scaleMin || 1;
+        const leftPct = ((minNum - scaleMin) / span) * 100;
+        const widthPct = Math.max(2, ((maxNum - minNum) / span) * 100);
+
+        document.getElementById('range-box').style.display = 'block';
+        document.getElementById('scale-min').textContent = scaleMin + '℃';
+        document.getElementById('scale-max').textContent = scaleMax + '℃';
+        document.getElementById('range-span-text').textContent = `${minNum}℃ ~ ${maxNum}℃`;
+
+        const spanEl = document.getElementById('range-span');
+        spanEl.style.left = leftPct.toFixed(1) + '%';
+        spanEl.style.width = widthPct.toFixed(1) + '%';
+
+        const dotEl = document.getElementById('range-avg-dot');
+        if (!Number.isNaN(avgNum)) {
+          const avgPct = Math.max(0, Math.min(100, ((avgNum - scaleMin) / span) * 100));
+          dotEl.style.left = avgPct.toFixed(1) + '%';
         } else {
-            statusCard.classList.add('bg-amber-50/55', 'border-amber-100');
-            statusIcon.classList.add('bg-amber-100/70');
-            statusIcon.innerHTML = warningSvg;
-            statusTitle.innerText = '温度超限预警';
-            statusTitle.classList.add('text-amber-700');
-            statusDesc.innerText = '监测到温度超标或合规率不足，请启动质量复核程序。';
-            headerStatus.innerText = '超限预警';
-            headerStatus.classList.add('bg-amber-50', 'text-amber-600');
+          dotEl.style.display = 'none';
         }
-    </script>
+      }
+
+      // 判定核验状态
+      const isPass = status === 'PASS' && rate >= 99.0;
+      const headerStatus = document.getElementById('header-status');
+      const statusTitle = document.getElementById('status-title');
+      const statusDesc = document.getElementById('status-desc');
+      const stampMain = document.getElementById('stamp-main');
+
+      if (isPass) {
+        document.body.classList.add('is-pass');
+        headerStatus.textContent = '温控合格';
+        statusTitle.textContent = '冷链温控核验合格';
+        statusDesc.textContent = '本批次药械运输全程温度符合 GSP 规范要求，准予正常收货入库。';
+        stampMain.textContent = '合格';
+      } else {
+        headerStatus.textContent = '超限预警';
+        statusTitle.textContent = '温度异常 / 合规率未达标';
+        statusDesc.textContent = '监测到全程温度存在超标记录或合规率低于 99.0%，请暂停入库并启动质量复核。';
+        stampMain.textContent = '复核';
+      }
+    })();
+  </script>
 </body>
 </html>
